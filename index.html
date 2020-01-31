@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>ToDoList</title>
+    <style>
+        [v-cloak] {
+            display: none;
+        }
+
+        tbody tr:hover {
+            background-color: lightgray;
+        }
+    </style>
+</head>
+<body>
+<div id="app" v-cloak>
+    <div>
+        <table width="100%" height="80" border="1" cellpadding="10" cellspacing="0">
+            <caption style="font-size: 20px;">
+                <span style="margin-bottom: 20px;">ToDoList by pangge</span> <br>
+                <input type="text" v-model="item" style="height: 20px; font-size: 16px; margin-bottom: 20px; margin-top: 20px;" @click="clearErr()" @keyup="clearErr()" @keyup.enter="addItem()"/>
+                <button id="btnAdd" type="button" @click="addItem()" style="width: 50px; height: 25px; font-size: 16px">Add</button>
+            </caption>
+            <span style="color: red; position: absolute; z-index: 10; left: 0; top: 0;" v-show="showError">Error: {{err}}</span>
+            <thead>
+            <tr style="font-size: 18px; color: #FFFFFF">
+                <th align="center" bgcolor="#3399FF" width="20%" height="20px" style="cursor:default">
+                    <label><input :checked="isChecked" type="checkbox" @click="selectAll()">Select</label>
+                </th>
+                <th align="center" bgcolor="#3399FF" width="60%" height="20px" style="cursor:default">Item</th>
+                <th align="center" bgcolor="#3399FF" width="20%" height="20px" style="cursor:default">Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr style="font-size: 16px;" v-for="(item, index) in itemList" :key="index">
+                <td align="center" height="20px" style="cursor:default"><label><input type="checkbox" @click="selectItem(index)" :checked="item.checked"></label></td>
+                <td align="center" height="20px" style="cursor:default">{{item.item}}</td>
+                <td align="center" height="20px" @click="deleteItem(index)" style="cursor:pointer">Delete</td>
+            </tr>
+            </tbody>
+            <tfoot v-show="showFooter">
+            <tr style="font-size: 18px;">
+                <td align="center" height="20px" @click="deleteAll()" style="cursor:pointer">Delete</td>
+                <th align="right" colspan="2" height="20px">
+                    Total: {{count}}
+                </th>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+<script src="js/vue.js"></script>
+<script>
+    new Vue({
+        el: "#app",
+        data() {
+            return {
+                item: "",
+                itemList: [],
+                showFooter: false,
+                isChecked: false,
+                count: 0,
+                showError: false,
+                err: ""
+            }
+        },
+        methods: {
+            addItem() {
+                if (this.item !== "") {
+                    var notFound = true;
+                    this.itemList.forEach(elem => {
+                        if (elem.item === this.item) {
+                            this.showError = true;
+                            this.err = "Duplicated item...";
+                            notFound = false;
+                        }
+                    });
+                    if (notFound) {
+                        this.itemList.push({item: this.item, checked: false});
+                        this.showFooter = true;
+                        this.count++;
+                        this.item = "";
+                    }
+                }else{
+                    this.showError = true;
+                    this.err = "You must enter something...";
+                }
+            },
+            deleteItem(index) {
+                this.itemList.splice(index, 1);
+                if (this.itemList.length <= 0) {
+                    this.showFooter = false;
+                }
+                this.count--;
+            },
+            selectAll() {
+                this.isChecked = !this.isChecked;
+                if (this.itemList.length > 0) {
+                    this.itemList.forEach(elem => elem.checked = this.isChecked);
+                }
+            },
+            deleteAll() {
+                this.itemList.forEach(elem => {
+                    for(var i=0; i<this.itemList.length; ) {
+                        if(this.itemList[i].checked) {
+                            this.itemList.splice(i, 1);
+                            this.count--;
+                        }else{
+                            i++
+                        }
+                    }
+                });
+                if (this.itemList.length <= 0) {
+                    this.showFooter = false;
+                }
+            },
+            selectItem(index) {
+                this.itemList[index].checked = !this.itemList[index].checked;
+                let allSelect = true;
+                this.itemList.forEach(elem => {
+                    if (elem.checked === false) allSelect = false;
+                });
+                this.isChecked = allSelect;
+                this.$set(this.itemList, index, this.itemList[index]);
+            },
+            clearErr() {
+                this.showError = false;
+                this.err = "";
+            }
+        }
+    });
+</script>
+</body>
+</html>
